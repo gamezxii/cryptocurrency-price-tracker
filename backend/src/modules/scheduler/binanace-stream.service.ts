@@ -16,7 +16,7 @@ export class BinanceStreamService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(BinanceStreamService.name);
   private ws?: WebSocket;
   private readonly quoteAsset = 'usdt';
-  private subscribed = new Set<string>(); // set ของ streamName ที่ subscribe อยู่ใน Binance แล้ว
+  private subscribed = new Set<string>(); 
 
   constructor(
     @Inject(forwardRef(() => CryptocurrencyService))
@@ -55,7 +55,7 @@ export class BinanceStreamService implements OnModuleInit, OnModuleDestroy {
           { symbol, price },
         ]);
 
-        // broadcast ไป frontend
+        
         this.wsService.emitToAll(WsEvent.EventName, {
           symbol: crypto.symbol,
           price: crypto.price,
@@ -74,7 +74,7 @@ export class BinanceStreamService implements OnModuleInit, OnModuleDestroy {
     });
   }
 
-  /** เรียกตอน start หรือเวลา symbol set เปลี่ยนเยอะ ๆ */
+  
   async resubscribeAll() {
     if (!this.ws || this.ws.readyState !== WebSocket.OPEN) return;
 
