@@ -1,0 +1,58 @@
+version: "3.9"
+
+services:
+  db:
+    container_name: db
+    image: postgres:15-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: crypto_tracker
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: mypassword
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+      - ./backend/database:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d crypto_tracker"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    container_name: backend
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    env_file:
+      - backend/.env
+    environment:
+      DATABASE_HOST: db
+      DATABASE_PORT: 5432
+      PORT: 3000
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "${BACKEND_PORT:-3000}:3000"
+    restart: unless-stopped
+
+  frontend:
+    container_name: frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    env_file:
+      - frontend/.env
+    environment:
+      PORT: 3001
+    depends_on:
+      backend:
+        condition: service_started
+    ports:
+      - "${FRONTEND_PORT:-3001}:3001"
+    restart: unless-stopped
+
+volumes:
+  db_data:
